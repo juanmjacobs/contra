@@ -39,24 +39,24 @@ function AddPlayersForm({ onAllIn }) {
       </Row>
       <Row className="justify-content-center" style={{margin: 15}}>
         <Col xs="auto">
-          <Button variant="primary" type="submit" onClick={onAllIn} className="mb-2" disabled={players.length < 2}> Estamos todos! </Button>
+          <Button variant="primary" type="submit" onClick={() => onAllIn(players)} className="mb-2" disabled={players.length < 2}> Estamos todos! </Button>
         </Col>
       </Row>
     </div>
   );
 }
-function ContraGameRound() {
-  return <div>Jugando!</div>
+function ContraGameRound({ players }) {
+  return <div>Jugando! {players.map(it => it.name).join(", ")}</div>
 }
 function App() {
   const [ isPlaying, setIsPlaying ] = useState(false);
-  const [ players, setPlayers ] = useState(false);
+  const [ players, setPlayers ] = useState([]);
   const startPlaying = (somePlayers) => {
     setIsPlaying(true);
     setPlayers(somePlayers)
   }
   if(!isPlaying) return <AddPlayersForm onAllIn={startPlaying}/>
-  return <ContraGameRound></ContraGameRound>
+  return <ContraGameRound players={players}></ContraGameRound>
 }
 
 export default App;
