@@ -1,8 +1,26 @@
 import _ from "lodash";
 import { useEffect, useState } from "react";
 import { Row, Col, ListGroup, Button } from "react-bootstrap";
+import Countdown from "react-countdown";
 import choices from "./choices";
 
+const Completionist = () => <span>Se acabó el tiempo!</span>;
+function TurnContdown({ turnDuration }) {
+  // Renderer callback with condition
+  const renderer = ({ hours, minutes, seconds, completed }) => {
+    if (completed) {
+      // Render a completed state
+      return <Completionist />;
+    } else {
+      // Render a countdown
+      return <span>{_.padStart(minutes, 2, "0")}:{_.padStart(seconds, 2, "0")}</span>;
+    }
+  };
+  return (<Countdown
+      date={Date.now() + (turnDuration * 1000 * 60)}
+      renderer={renderer}
+    />)
+}
 function ChoiceCard({ choiceOption }) {
   return (
     <ListGroup>
@@ -17,17 +35,17 @@ function ChoiceCard({ choiceOption }) {
 const generateInitialRounds = (players) => {
   return players.map((player, i) => {
     const round = {
-      playerA: player,
-      playerB: players[i + 1] || players[0], //El ultimo juega contra el primero
-      playerAScore: 0,
-      playerBScore: 0,
-      played: false,
+      playerA: { player, status: "pending", score: 0 },
+      playerB: { player: players[i + 1] || players[0], status: "pending", score: 0 }, //El ultimo juega contra el primero
+      played: function() {
+        return this.playerA.status === "played" && this.playerB.status === "played"
+      }
     }
     return round;
   });
 }
 
-export function ContraGameRound({ players }) {
+export function ContraGameRound({ players, turnDuration }) {
   const [currentChoice, setCurrentChoice] = useState(null);
   const initialRounds = generateInitialRounds(players);
   const [rounds, setRounds] = useState(initialRounds);
@@ -37,22 +55,32 @@ export function ContraGameRound({ players }) {
   const resetRounds = () => {
     setRounds(initialRounds)
   }
+  
   const setNextRound = () => {
-    const updatedRounds = rounds.map(it => it === currentRound ? { currentRound, played: true }: it);
+    const newCurrentRound = _.cloneDeep(currentRound);
+    const currentPlayer = currentRound.playerA.status === "pending" || currentRound.playerA.status === "playing" ? "playerA" : "playerB";
+    newCurrentRound[currentPlayer].status = "played";
+    if(currentPlayer === "playerA") {
+      newCurrentRound.playerB.status = "playing";
+    }
+    const updatedRounds = rounds.map(it => it === currentRound ? newCurrentRound : it);
     setRounds(updatedRounds);
   }
 
-  const currentRound = _(rounds).find(it => !it.played);
-  
-  useEffect(setRandomChoice)
+  const currentRound = _(rounds).find(it => !it.played());
+  const buttonCallback = () => !currentRound ? resetRounds() : setNextRound();
+  const buttonText = !currentRound ? "Comenzar" : "Siguiente turno";
+
+  useEffect(setRandomChoice, [])
   if(!currentChoice) return null;
+  const currentPlayers = currentRound ? [currentRound.playerA, currentRound.playerB] : [];
   return (
     <Row>
       <Col xs={3}>
         <ListGroup>
           { players.map(({ name, score }) => (
-            <ListGroup.Item>
-              { name } ({score || 0})
+            <ListGroup.Item key={name} style={{backgroundColor: _(currentPlayers).some(it => it.player.name === name) ? "lightblue" : ""}}>
+              { name } ({score || 0}) {  _.get(_(currentPlayers).find(it => it.player.name === name), "status") === "playing" && <i className="fa fa-check"></i> }
             </ListGroup.Item>
           )) }
         </ListGroup>
@@ -63,7 +91,7 @@ export function ContraGameRound({ players }) {
           {
             currentRound && (
             <div>
-              {currentRound.playerA.name} vs {currentRound.playerB.name}
+              {currentRound.playerA.player.name} vs {currentRound.playerB.player.name}
             </div>
           )}
         </Row>
@@ -79,8 +107,11 @@ export function ContraGameRound({ players }) {
             <ChoiceCard choiceOption={currentChoice.secondChoice}/>
           </Col>
         </Row>
+        <Row style={{ display: "flex", justifyContent: "center", margin: 15 }}>
+          { <TurnContdown turnDuration={turnDuration}/>}
+        </Row>
         <Row style={{ display: "flex", justifyContent: "right", margin: 15 }}>
-          <Button onClick={() => !currentRound ? resetRounds() : setNextRound()}>{ !currentRound ? "Comenzar" : "Siguiente turno" }</Button>
+          <Button onClick={buttonCallback}>{ buttonText }</Button>
         </Row>
       </Col>
     </Row>
