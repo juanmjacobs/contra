@@ -1,6 +1,7 @@
 import _ from "lodash";
 import { useEffect, useState } from "react";
 import { Row, Col, ListGroup, Button } from "react-bootstrap";
+import Countdown from "react-countdown";
 import choices from "./choices";
 
 function ChoiceCard({ choiceOption }) {
@@ -27,7 +28,7 @@ const generateInitialRounds = (players) => {
   });
 }
 
-export function ContraGameRound({ players }) {
+export function ContraGameRound({ players, turnDuration }) {
   const [currentChoice, setCurrentChoice] = useState(null);
   const initialRounds = generateInitialRounds(players);
   const [rounds, setRounds] = useState(initialRounds);
@@ -43,6 +44,8 @@ export function ContraGameRound({ players }) {
   }
 
   const currentRound = _(rounds).find(it => !it.played);
+  const buttonCallback = () => !currentRound ? resetRounds() : setNextRound();
+  const buttonText = !currentRound ? "Comenzar" : "Siguiente turno";
   
   useEffect(setRandomChoice)
   if(!currentChoice) return null;
@@ -80,7 +83,7 @@ export function ContraGameRound({ players }) {
           </Col>
         </Row>
         <Row style={{ display: "flex", justifyContent: "right", margin: 15 }}>
-          <Button onClick={() => !currentRound ? resetRounds() : setNextRound()}>{ !currentRound ? "Comenzar" : "Siguiente turno" }</Button>
+          <Button onClick={buttonCallback}>{ buttonText }</Button>
         </Row>
       </Col>
     </Row>
