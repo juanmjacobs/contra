@@ -1,13 +1,15 @@
 import _ from "lodash";
 import { useEffect, useState } from "react";
-import { Row, Col, ListGroup, Button, ListGroupItem } from "react-bootstrap";
+import { Row, Col, ListGroup, Button } from "react-bootstrap";
 import choices from "./choices";
 
 function ChoiceCard({ choiceOption }) {
   return (
     <ListGroup>
       <ListGroup.Item>
-        {choiceOption}
+        <div style={{ minHeight: 300, display: "flex", justifyContent: "center", alignItems: "center"}}>
+          {choiceOption}
+        </div>
       </ListGroup.Item>
     </ListGroup>
   )
@@ -41,7 +43,8 @@ export function ContraGameRound({ players }) {
             <ChoiceCard choiceOption={currentChoice.secondChoice}/>
           </Col>
         </Row>
-        <Row>
+        <Row style={{ display: "flex", justifyContent: "center", marginTop: 15 }}>
+
           <Button onClick={setRandomChoice}><i className="fa fa-refresh"></i></Button>
         </Row>
       </Col>
