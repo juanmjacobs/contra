@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { useEffect, useState } from "react";
-import { Row, Col, ListGroup, Button } from "react-bootstrap";
+import { Row, Col, ListGroup, Button, ListGroupItem } from "react-bootstrap";
 import choices from "./choices";
 
 function ChoiceCard({ choiceOption }) {
@@ -18,22 +18,33 @@ export function ContraGameRound({ players }) {
     setCurrentChoice(_.sample(choices))
   }
   useEffect(setRandomChoice)
-  console.log("currentChoice",currentChoice)
   if(!currentChoice) return null;
   return (
-    <>
-      <div>Jugando! {players.map(it => it.name).join(", ")}</div>
-      <Row>
-        <Col xs={6}>
-          <ChoiceCard choiceOption={currentChoice.firstChoice}/>
-        </Col>
-        <Col xs={6}>
-          <ChoiceCard choiceOption={currentChoice.secondChoice}/>
-        </Col>
-      </Row>
-      <Row>
-        <Button onClick={setRandomChoice}><i className="fa fa-refresh"></i></Button>
-      </Row>
-    </>
+    <Row>
+      <Col xs={3}>
+        <ListGroup>
+          { players.map(({ name, score }) => (
+            <ListGroup.Item>
+              { name } ({score || 0})
+            </ListGroup.Item>
+          )) }
+        </ListGroup>
+      </Col>
+
+      <Col xs={9}>
+
+        <Row>
+          <Col xs={6}>
+            <ChoiceCard choiceOption={currentChoice.firstChoice}/>
+          </Col>
+          <Col xs={6}>
+            <ChoiceCard choiceOption={currentChoice.secondChoice}/>
+          </Col>
+        </Row>
+        <Row>
+          <Button onClick={setRandomChoice}><i className="fa fa-refresh"></i></Button>
+        </Row>
+      </Col>
+    </Row>
   );
 }
