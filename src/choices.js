@@ -1,4 +1,4 @@
-export default [{
+const choices = [{
     firstChoice: "Dulce",
     secondChoice: "salado"
 },
@@ -162,3 +162,5 @@ export default [{
     secondChoice: "home office"
 }
 ]
+
+export default choices;
