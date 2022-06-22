@@ -29,7 +29,7 @@ function Layout({ isPlaying, restartGame, children }) {
 }
 function App() {
   const [ isPlaying, setIsPlaying ] = useState(true);
-  const [ turnDuration/*, setTurnDuration*/ ] = useState(2);
+  const [ turnDuration, setTurnDuration ] = useState(2);
   const [ players, setPlayers ] = useState([{name:"Juan"}, {name:"Juli"}, {name:"Flor"}, {name:"Mati"}, {name:"Agos"}]);
   const startPlaying = (somePlayers) => {
     setIsPlaying(true);
@@ -41,7 +41,7 @@ function App() {
     }
   }
   
-  const currentView = isPlaying ? <ContraGameRound players={players} turnDuration={turnDuration}/> : <AddPlayersForm onAllIn={startPlaying}/>;
+  const currentView = isPlaying ? <ContraGameRound players={players} turnDuration={turnDuration}/> : <AddPlayersForm onAllIn={startPlaying} turnDuration={turnDuration} setTurnDuration={setTurnDuration}/>;
   
   return (
     <Layout isPlaying={isPlaying} restartGame={restartGame}>
