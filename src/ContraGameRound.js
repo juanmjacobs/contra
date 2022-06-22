@@ -18,11 +18,11 @@ function ChoiceCard({ choiceOption }) {
 const generateInitialRounds = (players) => {
   return players.map((player, i) => {
     const round = {
-      playerA: player,
-      playerB: players[i + 1] || players[0], //El ultimo juega contra el primero
-      playerAScore: 0,
-      playerBScore: 0,
-      played: false,
+      playerA: { player, status: i === 0 ? "playing":"pending", score: 0 },
+      playerB: { player: players[i + 1] || players[0], status: "pending", score: 0 }, //El ultimo juega contra el primero
+      played: function() {
+        return this.playerA.status === "played" && this.playerB.status === "played"
+      }
     }
     return round;
   });
@@ -38,24 +38,32 @@ export function ContraGameRound({ players, turnDuration }) {
   const resetRounds = () => {
     setRounds(initialRounds)
   }
+  
   const setNextRound = () => {
-    const updatedRounds = rounds.map(it => it === currentRound ? { currentRound, played: true }: it);
+    const newCurrentRound = _.cloneDeep(currentRound);
+    const currentPlayer = currentRound.playerA.status === "pending" || currentRound.playerA.status === "playing" ? "playerA" : "playerB";
+    newCurrentRound[currentPlayer].status = "played";
+    if(currentPlayer === "playerA") {
+      newCurrentRound.playerB.status = "playing";
+    }
+    const updatedRounds = rounds.map(it => it === currentRound ? newCurrentRound : it);
     setRounds(updatedRounds);
   }
 
-  const currentRound = _(rounds).find(it => !it.played);
+  const currentRound = _(rounds).find(it => !it.played());
   const buttonCallback = () => !currentRound ? resetRounds() : setNextRound();
   const buttonText = !currentRound ? "Comenzar" : "Siguiente turno";
-  
-  useEffect(setRandomChoice)
+
+  useEffect(setRandomChoice, [])
   if(!currentChoice) return null;
+  const currentPlayers = currentRound ? [currentRound.playerA, currentRound.playerB] : [];
   return (
     <Row>
       <Col xs={3}>
         <ListGroup>
           { players.map(({ name, score }) => (
-            <ListGroup.Item>
-              { name } ({score || 0})
+            <ListGroup.Item key={name} style={{backgroundColor: _(currentPlayers).some(it => it.player.name === name) ? "lightblue" : ""}}>
+              { name } ({score || 0}) {  _.get(_(currentPlayers).find(it => it.player.name === name), "status") === "playing" && <i className="fa fa-check"></i> }
             </ListGroup.Item>
           )) }
         </ListGroup>
@@ -66,7 +74,7 @@ export function ContraGameRound({ players, turnDuration }) {
           {
             currentRound && (
             <div>
-              {currentRound.playerA.name} vs {currentRound.playerB.name}
+              {currentRound.playerA.player.name} vs {currentRound.playerB.player.name}
             </div>
           )}
         </Row>
