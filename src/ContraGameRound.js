@@ -4,6 +4,23 @@ import { Row, Col, ListGroup, Button } from "react-bootstrap";
 import Countdown from "react-countdown";
 import choices from "./choices";
 
+const Completionist = () => <span>Se acabó el tiempo!</span>;
+function TurnContdown({ turnDuration }) {
+  // Renderer callback with condition
+  const renderer = ({ hours, minutes, seconds, completed }) => {
+    if (completed) {
+      // Render a completed state
+      return <Completionist />;
+    } else {
+      // Render a countdown
+      return <span>{_.padStart(minutes, 2, "0")}:{_.padStart(seconds, 2, "0")}</span>;
+    }
+  };
+  return (<Countdown
+      date={Date.now() + (turnDuration * 1000 * 60)}
+      renderer={renderer}
+    />)
+}
 function ChoiceCard({ choiceOption }) {
   return (
     <ListGroup>
@@ -18,7 +35,7 @@ function ChoiceCard({ choiceOption }) {
 const generateInitialRounds = (players) => {
   return players.map((player, i) => {
     const round = {
-      playerA: { player, status: i === 0 ? "playing":"pending", score: 0 },
+      playerA: { player, status: "pending", score: 0 },
       playerB: { player: players[i + 1] || players[0], status: "pending", score: 0 }, //El ultimo juega contra el primero
       played: function() {
         return this.playerA.status === "played" && this.playerB.status === "played"
@@ -89,6 +106,9 @@ export function ContraGameRound({ players, turnDuration }) {
           <Col xs={6}>
             <ChoiceCard choiceOption={currentChoice.secondChoice}/>
           </Col>
+        </Row>
+        <Row style={{ display: "flex", justifyContent: "center", margin: 15 }}>
+          { <TurnContdown turnDuration={turnDuration}/>}
         </Row>
         <Row style={{ display: "flex", justifyContent: "right", margin: 15 }}>
           <Button onClick={buttonCallback}>{ buttonText }</Button>
