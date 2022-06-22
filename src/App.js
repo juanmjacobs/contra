@@ -3,24 +3,25 @@ import { useState } from "react";
 import { Navbar, Container, Nav } from "react-bootstrap";
 import { ContraGameRound } from "./ContraGameRound";
 import { AddPlayersForm } from "./AddPlayersForm";
-function ContraNavbar() {
+function ContraNavbar({ isPlaying, restartGame }) {
   return (
     <Navbar bg="light" expand="lg">
       <Container>
         <Navbar.Brand href="#home">Contra</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="me-auto">
+          <Nav>
+            { isPlaying && <a href="/#" onClick={e =>{e.preventDefault(); restartGame()} }>Reiniciar</a>}
           </Nav>
         </Navbar.Collapse>
       </Container>
   </Navbar>
   );
 }
-function Layout({ children }) {
+function Layout({ isPlaying, restartGame, children }) {
   return (
     <>
-    <ContraNavbar/>
+    <ContraNavbar isPlaying={isPlaying} restartGame={restartGame}/>
     <div style={{padding: 15}}>
       {children}
     </div>
@@ -33,11 +34,16 @@ function App() {
     setIsPlaying(true);
     setPlayers(somePlayers)
   }
+  const restartGame = () => {
+    if(window.confirm("¿Quieres volver a iniciar el juego con nuevos jugadores?")) {
+      setIsPlaying(false);
+    }
+  }
   
   const currentView = isPlaying ? <ContraGameRound players={players}/> : <AddPlayersForm onAllIn={startPlaying}/>;
   
   return (
-    <Layout>
+    <Layout isPlaying={isPlaying} restartGame={restartGame}>
       {currentView}
     </Layout>
   )
